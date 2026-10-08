@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>AI Resume Analyzer</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #222;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 900px;
+            margin: 50px auto;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .card,
+        .result {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px dashed #aaa;
+            border-radius: 10px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 20px;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            background: #222;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.85;
+        }
+
+        .result {
+            display: none;
+        }
+
+        .score {
+            text-align: center;
+            font-size: 55px;
+            font-weight: bold;
+            margin: 20px;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 5px;
+            background: #eef2ff;
+            border-radius: 20px;
+        }
+
+        .recommendation {
+            margin-top: 25px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+
+        .error {
+            color: red;
+            margin-top: 15px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>🤖 AI Resume Analyzer</h1>
+
+    <p class="subtitle">
+        Upload your resume and let AI analyze your technical skills
+    </p>
+
+
+    <div class="card">
+
+        <h3>📄 Upload Your Resume</h3>
+
+        <p>
+            Supported formats: PDF, DOCX, TXT
+        </p>
+
+        <input
+            type="file"
+            id="resumeFile"
+            accept=".pdf,.docx,.txt">
+
+        <button onclick="analyzeResume()">
+            Analyze Resume
+        </button>
+
+        <p id="error" class="error"></p>
+
+    </div>
+
+
+    <div id="result" class="result">
+
+        <h2>📊 Resume Analysis</h2>
+
+        <p>
+            <strong>File:</strong>
+            <span id="filename"></span>
+        </p>
+
+        <div class="score" id="score">
+            0%
+        </div>
+
+
+        <h3>✅ Detected Skills</h3>
+
+        <div id="skills"></div>
+
+
+        <div class="recommendation">
+
+            <h3>💡 AI Recommendation</h3>
+
+            <p id="recommendation"></p>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+async function analyzeResume() {
+
+    const fileInput =
+        document.getElementById("resumeFile");
+
+    const error =
+        document.getElementById("error");
+
+    error.innerText = "";
+
+    if (fileInput.files.length === 0) {
+
+        error.innerText =
+            "Please select your resume first.";
+
+        return;
+    }
+
+    const file = fileInput.files[0];
+
+    const formData = new FormData();
+
+    formData.append("resume", file);
+
+
+    try {
+
+        const response = await fetch(
+            "/analyze",
+            {
+                method: "POST",
+                body: formData
+            }
+        );
+
+        const data = await response.json();
+
+
+        if (!response.ok) {
+
+            error.innerText = data.error;
+
+            return;
+        }
+
+
+        document.getElementById("result")
+            .style.display = "block";
+
+
+        document.getElementById("filename")
+            .innerText = data.filename;
+
+
+        document.getElementById("score")
+            .innerText = data.score + "%";
+
+
+        document.getElementById("skills")
+            .innerHTML =
+            data.skills.map(function(skill) {
+
+                return `
+                    <span class="tag">
+                        ${skill}
+                    </span>
+                `;
+
+            }).join("");
+
+
+        document.getElementById("recommendation")
+            .innerText = data.recommendation;
+
+    }
+
+    catch (err) {
+
+        error.innerText =
+            "Something went wrong. Please try again.";
+
+    }
+
+}
+
+</script>
+
+</body>
+
+</html>
